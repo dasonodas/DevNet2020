@@ -94,19 +94,20 @@ def strip_parenthesis(_list):
 Solve a simple operation
 """
 def solve_op(op, left_op, right_op):
-    if op == "+":
-        result = left_op + right_op
-    elif op == "-":
-        result = left_op - right_op
-    elif op == "*":
-        result = left_op * right_op
-    elif op == "/":
-        try:
-            result = left_op / right_op
-        except:
-            return zerodivision
-    elif op == "**":
-        result = left_op ** right_op
+    try:
+        if op == "+":
+            result = left_op + right_op
+        elif op == "-":
+            result = left_op - right_op
+        elif op == "*":
+            result = left_op * right_op
+        elif op == "/":
+                result = left_op / right_op
+        elif op == "**":
+            result = left_op ** right_op
+    except:
+            raise
+
     return result
 
 """
@@ -116,22 +117,21 @@ def solve_tree(_root):
     #Check if _root is a leaf node
     if _root.left == None and _root.right == None:
         return _root.data
+    try:
+        #If left child is operation, solve it
+        if _root.left.data in allowed_ops:
+            left_op = solve_tree(_root.left)
+        else:
+            left_op = _root.left.data
 
-    #If left child is operation, solve it
-    if _root.left.data in allowed_ops:
-        left_op = solve_tree(_root.left)
-    else:
-        left_op = _root.left.data
+        #If left child is operation, solve it
+        if _root.right.data in allowed_ops:
+            right_op = solve_tree(_root.right)
+        else: 
+            right_op = _root.right.data
+    except:
+        raise
 
-    #If left child is operation, solve it
-    if _root.right.data in allowed_ops:
-        right_op = solve_tree(_root.right)
-    else: 
-        right_op = _root.right.data
-
-    #If any of the previos ops gives ZeroDivisionError
-    if left_op == zerodivision or right_op == zerodivision:
-        return zerodivision
     else:
         result = solve_op(_root.data, left_op, right_op)
         return result
@@ -165,7 +165,10 @@ def solve(lista):
     if count_parenthesis(lista):
         return "Cuenta mal formada, comprueba los parentesis"
     root_node = create_tree(lista)
-    return solve_tree(root_node)
+    try:
+        return solve_tree(root_node)
+    except:
+        raise
 
 """
 Prints welcome menu
@@ -368,12 +371,19 @@ while not end:
         print(i, end=" ")
 
     #Once the user ends the input, calculate the result
-    result = solve(regular_op)
-    print()
-    print('\033[92m' ,result, '\033[0m')
-    print()
-    if result != zerodivision:
-        last_result = result
+    print("\n\n**************************\n")
+    for i in visual_op:
+            print(i, end=" ")
+    try:
+        result = solve(regular_op)
+        print()
+        print('\033[92m' ,result, '\033[0m')
+        print()
+    except ZeroDivisionError:
+        print("\033[91mError, division por 0\033[0m")
+    except:
+        print("\033[91mError no contemplado\033[0m")
+    print("\n**************************\n")
 
     next = input("Si desea realizar otra operacion pulse s, de lo contrario pulse cualquier otra letra: ")
     if(next.lower() != "s"):
@@ -381,4 +391,3 @@ while not end:
 
 
 print("\nGracias por usar mi calculadora, vuelva pronto!\n")
-
