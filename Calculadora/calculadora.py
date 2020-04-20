@@ -376,7 +376,7 @@ while not end:
             print(i, end=" ")
     try:
         result = solve(regular_op)
-        print()
+        last_result = result
         print('\033[92m' ,result, '\033[0m')
         print()
     except ZeroDivisionError:
