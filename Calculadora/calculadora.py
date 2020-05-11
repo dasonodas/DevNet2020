@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 __author__  = "Diego Pellitero Fernández"
 """
 Node: Class used for creating the binary tree
