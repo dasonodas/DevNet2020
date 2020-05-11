@@ -23,7 +23,7 @@ def print_options():
         2) Crear una interfaz de loopback
         3) Eliminar una interfaz
         4) Ver la tabla de rutas
-        
+        5) Obtener interfaces con otro modelo distinto al del 1)
         0) Salir
     """)
     
@@ -96,6 +96,27 @@ def get_interfaces_netconf():
         
         interface_lists.append([interface["name"], ip_addr, int_status, mac_addr])
     return interface_lists
+
+
+def get_interfaces_other_model():
+     # Definimos la conexion
+    con = manager.connect(host = router["address"], port = router["netconf-port"],
+                    username = router["username"],
+                    password = router["password"],
+                    hostkey_verify = False)
+
+    # Filtro para netconf
+    netconf_filter = """
+    <filter>
+        <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+            <interface />
+        </native>
+    </filter>
+    """
+
+    netconf_reply = con.get_config(source="running", filter = netconf_filter)
+
+    return xml.dom.minidom.parseString(netconf_reply.xml).toprettyxml()
 
 
 def create_loopback_interface_restconf(name, description, ip_addr, netmask):
@@ -192,7 +213,6 @@ if __name__ == "__main__":
         print("")
         if opt == 1:
             interface_lists = get_interfaces_netconf()
-            
             print(tabulate(interface_lists, ["Name", "IPv4 Address", "Status", "MAC-Address"]))
         
         elif opt == 2:
@@ -205,6 +225,8 @@ if __name__ == "__main__":
                 print("Status OK: {}".format(resp.status_code))
             else:
                 print("Error code: {}, reply {}".format(resp.status_code, resp.json()))
+            interface_lists = get_interfaces_netconf()
+            print(tabulate(interface_lists, ["Name", "IPv4 Address", "Status", "MAC-Address"]))
 
         elif opt == 3:
             name = input("Escribe el nombre de la interfaz que quieres eliminar: ")
@@ -215,9 +237,14 @@ if __name__ == "__main__":
                 print("The resource does not exist. Error code: {}".format(resp.status_code))
             elif resp.status_code > 404:
                 print("There was an error. Error code: {}".format(resp.status_code))
+            interface_lists = get_interfaces_netconf()
+            print(tabulate(interface_lists, ["Name", "IPv4 Address", "Status", "MAC-Address"]))
 
         elif opt == 4:
             print(get_routing_table())
+
+        elif opt == 5:
+            print(get_interfaces_other_model())
 
         elif opt == 0:
             print("Un placer, nos vemos!")
